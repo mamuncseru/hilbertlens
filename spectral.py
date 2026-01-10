@@ -1,6 +1,6 @@
 import numpy as np
 
-def compute_spectrum(kernel_fn, n_samples=1000, range_max=2*np.pi):
+def compute_spectrum(kernel_fn, n_samples=1000, range_max=4*np.pi):
     """
     Analyzes the frequency spectrum of a quantum kernel.
 
@@ -18,49 +18,35 @@ def compute_spectrum(kernel_fn, n_samples=1000, range_max=2*np.pi):
         power (np.array): The normalized power (importance) of each frequency.
     """
     
-    # 1. Create the sweep data
-    # We create a linspace of inputs x from 0 to range_max
-    # Shape must be (n_samples, 1) to mimic standard ML data shape
+    # 1. Sweep
     X_sweep = np.linspace(0, range_max, n_samples).reshape(-1, 1)
     
-    # 2. Compute the Kernel Signal
-    # We compare every point in X_sweep to a fixed reference point (x=0)
-    # Ideally, the kernel function should handle K(X, X_ref).
-    # If the user's function expects K(X), we might need to handle that.
-    # Let's assume for now kernel_fn returns the Gram matrix of the input.
-    
-    # We pass the sweep data to the kernel function
+    # 2. Get Signal (K(x, 0))
     K_matrix = kernel_fn(X_sweep)
-    
-    # We extract the first column: K(x, x[0]) where x[0] = 0.
-    # This gives us the function f(x) = K(x, 0)
     signal = K_matrix[:, 0]
     
-    # 3. Perform Fourier Transform (FFT)
-    # We use rfft because our signal is real-valued (kernel values are real)
-    fft_coeffs = np.fft.rfft(signal)
+    # 3. FFT
+    # Normalize signal by subtracting mean (removes the DC component/Frequency 0 spike)
+    # This helps us see the 'structure' frequencies better.
+    signal_centered = signal - np.mean(signal)
     
-    # Calculate the power spectrum (magnitude squared)
+    fft_coeffs = np.fft.rfft(signal_centered)
     power_spectrum = np.abs(fft_coeffs)**2
     
-    # 4. Map FFT indices to real Frequencies
-    # The FFT gives us bins. We need to know which integer frequency corresponds to which bin.
-    # The resolution of our sampling is sample_spacing = range_max / n_samples
-    # The frequency bins correspond to 0, 1/T, 2/T... where T is range_max.
-    
-    # If we sampled over [0, 2pi], the fundamental frequency is 1.
-    # We normalize so that the index corresponds roughly to integer frequencies.
-    
-    # Get the frequencies corresponding to the FFT bins
+    # 4. Map to Frequencies
+    # fft_freqs returns 'cycles per radian'
     fft_freqs = np.fft.rfftfreq(n_samples, d=(range_max/n_samples))
     
-    # We are usually interested in integer frequencies (1x, 2x, 3x...)
-    # We will scale the x-axis so that 1.0 means "1 oscillation per 2pi" (if that's our base).
-    # Standard convention: If data is angle-encoded, base period is 2pi.
-    scale_factor = 2 * np.pi 
-    freqs_scaled = fft_freqs * scale_factor
+    # Convert to 'k' in e^{ikx}
+    # If wave is cos(x), period is 2pi, so k=1.
+    # rfftfreq gives 1/(2pi) for that wave. 
+    # So we multiply by 2pi to get 'k'.
+    freqs_k = fft_freqs * (2 * np.pi)
     
-    # Normalize power so it sums to 1 (for readability)
-    power_normalized = power_spectrum / np.sum(power_spectrum)
+    # Normalize power
+    if np.sum(power_spectrum) > 1e-10:
+        power_normalized = power_spectrum / np.sum(power_spectrum)
+    else:
+        power_normalized = power_spectrum
     
-    return freqs_scaled, power_normalized
+    return freqs_k, power_normalized
