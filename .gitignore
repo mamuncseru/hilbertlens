@@ -1,0 +1,145 @@
+# ===============================
+# Python bytecode / cache
+# ===============================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ===============================
+# Virtual environments
+# ===============================
+.env
+.venv
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ===============================
+# Packaging / build artifacts
+# ===============================
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# ===============================
+# Installer logs
+# ===============================
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ===============================
+# Unit test / coverage reports
+# ===============================
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+nosetests.xml
+coverage.xml
+
+# ===============================
+# Jupyter / IPython
+# ===============================
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# ===============================
+# ML / Scientific computing
+# ===============================
+*.h5
+*.hdf5
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.npz
+*.npy
+*.pkl
+*.joblib
+
+# ===============================
+# Quantum computing outputs
+# ===============================
+qiskit_*.json
+qiskit_*.log
+*.qasm
+*.quil
+*.stim
+*.cirq
+
+# ===============================
+# Experiment tracking / logs
+# ===============================
+logs/
+wandb/
+mlruns/
+tensorboard/
+tb_logs/
+
+# ===============================
+# Data (never version large datasets)
+# ===============================
+data/
+datasets/
+raw_data/
+processed_data/
+
+# ===============================
+# IDEs / Editors
+# ===============================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ===============================
+# OS files
+# ===============================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===============================
+# Documentation builds
+# ===============================
+docs/_build/
+site/
+
+# ===============================
+# Security / secrets
+# ===============================
+.env.*
+*.key
+*.pem
+*.crt
+secrets.yaml
+secrets.json
+
+# ===============================
+# Temporary files
+# ===============================
+*.tmp
+*.swp
+*.bak
+*.log
+
+# ===============================
+# PennyLane
+# ===============================
+.pennylane/
+pennylane.log
+*.pl
+
+# Quantum cloud credentials
+.aws/
+.ibm/
+.braket/
