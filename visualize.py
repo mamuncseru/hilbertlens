@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from mpl_toolkits.mplot3d import Axes3D # Required for 3D plotting
+
 
 def plot_spectrum(freqs, power, top_k=5, title="Quantum Kernel Spectrum", save_path=None):
     """
@@ -56,3 +58,47 @@ def plot_spectrum(freqs, power, top_k=5, title="Quantum Kernel Spectrum", save_p
         plt.close(fig) # Close figure to free memory
     else:
         plt.show()
+
+def plot_manifold_3d(X_projected, color_values, title="Quantum State Projection", save_path=None):
+    """
+    Visualizes the dataset in the quantum feature space (via KPCA).
+    
+    Args:
+        X_projected (array): (N, 3) array from Kernel PCA.
+        color_values (array): (N,) array to color the points (usually the manifold coordinate).
+        title (str): Plot title.
+    """
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # Scatter plot
+    scatter = ax.scatter(
+        X_projected[:, 0], 
+        X_projected[:, 1], 
+        X_projected[:, 2], 
+        c=color_values, 
+        cmap='viridis', 
+        s=40,
+        alpha=0.8
+    )
+    
+    fig.colorbar(scatter, ax=ax, label="Manifold Position (Color)")
+    ax.set_title(title)
+    ax.set_xlabel("PC 1")
+    ax.set_ylabel("PC 2")
+    ax.set_zlabel("PC 3")
+    
+    plt.tight_layout()
+    
+    if save_path:
+        directory = os.path.dirname(save_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+        plt.savefig(save_path, dpi=300)
+        print(f"Manifold plot saved to: {save_path}")
+        plt.close(fig)
+    else:
+        plt.show()
+
+
+
