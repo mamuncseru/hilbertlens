@@ -51,6 +51,11 @@ def test_two_moons():
     qc.rz(x[0], 1)
     
     print("Circuit Created: 2-Qubit Entangled Network.")
+    
+    # save the circuit diagram
+    circuit_path = "two_moons_encoding_circuit.png"
+    qc.draw('mpl').savefig(circuit_path)
+    print(f"Circuit diagram saved to {circuit_path}")
 
     # 3. Initialize Lens
     lens = hl.QuantumLens(qc, params=list(x), framework='qiskit')
