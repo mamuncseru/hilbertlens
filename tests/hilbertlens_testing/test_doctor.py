@@ -7,7 +7,7 @@ import os
 import sys
 
 PROJECT_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../../../")
+    os.path.join(os.path.dirname(__file__), "../../")
 )
 
 print(f"Adding PROJECT_ROOT to sys.path: {PROJECT_ROOT}")
