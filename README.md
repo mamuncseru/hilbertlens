@@ -75,7 +75,7 @@ lens.geometry(save_path="geometry.png")
 ## Sample Output
 ---
 #### Testing with Real Data: Two Moons 
-[Test Script: Two Moons](hilbertlens/tests/hilbertlens_testing/test_two_moons.py)
+[Test Script: Two Moons](https://raw.githubusercontent.com/mamuncseru/hilbertlens/tests/hilbertlens_testing/test_two_moons.py)
 
 **Data Shape:** `(200, 2)`  
 **Features:** 2  
@@ -83,7 +83,7 @@ lens.geometry(save_path="geometry.png")
 #### i. Quantum Circuit
 **Circuit Created:** 2-Qubit Entangled Network
 
-![Two Moons Encoding Circuit](./tests/hilbertlens_testing/two_moons_encoding_circuit.png)
+![Two Moons Encoding Circuit](https://raw.githubusercontent.com/mamuncseru/hilbertlens/tests/hilbertlens_testing/two_moons_encoding_circuit.png)
 
 **[HilbertLens]** Initialized for framework: `qiskit`
 
@@ -107,7 +107,7 @@ lens.geometry(save_path="geometry.png")
 - **k = 2.0** | Power: `0.112`  
 
 **Output:** `moons_spectrum.png`
-![Two Moons Spectrum](./tests/hilbertlens_testing/moons_spectrum.png)
+![Two Moons Spectrum]([.](https://raw.githubusercontent.com/mamuncseru/)/tests/hilbertlens_testing/moons_spectrum.png)
 
 #### HILBERTLENS DIAGNOSIS REPORT
 
