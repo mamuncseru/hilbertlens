@@ -74,46 +74,40 @@ lens.geometry(save_path="geometry.png")
 
 ## Sample Output
 ---
-#### Testing with Real Data: Two Moons
+#### Testing with Real Data: Two Moons 
+[Test Script: Two Moons](hilbertlens/tests/hilbertlens_testing/test_two_moons.py)
 
 **Data Shape:** `(200, 2)`  
 **Features:** 2  
 
-#### Quantum Circuit
+#### i. Quantum Circuit
 **Circuit Created:** 2-Qubit Entangled Network
 
-
-     ┌───┐ ┌──────────┐       ┌──────────┐
-q_0: ┤ H ├─┤ Rz(x[0]) ├───■───┤ Rz(x[1]) ├
-     ├───┤ ├──────────┤ ┌─┴─┐ ├──────────┤
-q_1: ┤ H ├─┤ Rz(x[1]) ├─┤ X ├─┤ Rz(x[0]) ├
-     └───┘ └──────────┘ └───┘ └──────────┘
-
+![Two Moons Encoding Circuit](./tests/hilbertlens_testing/two_moons_encoding_circuit.png)
 
 **[HilbertLens]** Initialized for framework: `qiskit`
 
 
-#### Geometry Check (Two Moons)
+#### ii. Geometry Check (Two Moons)
 
 **Status:** Analyzing Geometry  
 - **Geometry Score (Spearman Correlation):** `0.9182`  
 - **Output:** `moons_geometry.png`
 
----
 
-#### Spectrum Check
+
+#### iii. Spectrum Check
 
 **Status:** Computing Spectrum  
 **Mode:** Global
 
-### Dominant Frequencies — Global Sweep
+**Dominant Frequencies — Global Sweep**
 - **k = 1.0** | Power: `0.446`  
 - **k = 3.0** | Power: `0.442`  
 - **k = 2.0** | Power: `0.112`  
 
 **Output:** `moons_spectrum.png`
-
----
+![Two Moons Spectrum](./tests/hilbertlens_testing/moons_spectrum.png)
 
 #### HILBERTLENS DIAGNOSIS REPORT
 
@@ -124,14 +118,12 @@ q_1: ┤ H ├─┤ Rz(x[1]) ├─┤ X ├─┤ Rz(x[0]) ├
 - **Assessment:** Complex spectrum with three active frequencies; capable of deep nuance.  
 - **Advice:** Gold standard. Capable of universal classification.
 
----
 
 #### [2] Geometry Analysis — Inductive Bias
 - **Preservation Score:** `0.9182` (Spearman ρ)  
 - **Category:** Excellent Preservation  
 - **Assessment:** The quantum kernel faithfully preserves the topological structure of the input data.
 
----
 
 #### [3] Final Verdict
 
