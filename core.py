@@ -4,7 +4,10 @@ from .adapters import QiskitAdapter, PennyLaneAdapter, HAS_PENNYLANE
 from .spectral import compute_spectrum
 from .geometry import compute_geometry_score, project_quantum_state
 from .visualize import plot_spectrum, plot_manifold_3d
+from .diagnose import print_report 
 from sklearn.datasets import make_swiss_roll
+
+
 
 class QuantumLens:
     def __init__(self, object_to_analyze, params=None, framework="auto"):
@@ -17,6 +20,10 @@ class QuantumLens:
             framework: 'qiskit', 'pennylane', or 'auto'.
         """
         self.adapter = self._load_adapter(object_to_analyze, params, framework)
+
+        # State to store results
+        self.last_spectrum_stats = None
+        self.last_geometry_stats = None
         
     def _load_adapter(self, obj, params, framework):
         # 1. Automatic Detection
@@ -109,7 +116,16 @@ class QuantumLens:
         plot_spectrum(freqs, power, title=title, save_path=save_path)
         
         top_idx = np.argmax(power)
-        return {"dominant_freq": freqs[top_idx], "max_power": power[top_idx]}
+        
+        # STORE FULL RESULTS (Updated)
+        
+        self.last_spectrum_stats = {
+            "dominant_freq": freqs[top_idx], 
+            "max_power": power[top_idx],
+            "freqs": freqs,  
+            "power": power  
+        }
+        return self.last_spectrum_stats
 
     def geometry(self, X_data=None, n_samples=200, save_path=None):
         """
@@ -153,4 +169,24 @@ class QuantumLens:
         title = f"Geometry Projection (Score: {score:.2f})"
         plot_manifold_3d(X_proj, color, title=title, save_path=save_path)
         
-        return {"score": score}
+        # STORE RESULTS
+        self.last_geometry_stats = {"score": score}
+        return self.last_geometry_stats
+    
+    def diagnose(self):
+        """
+        Generates the full research report based on previous runs.
+        Auto-runs components if they are missing.
+        """
+        # If user hasn't run spectrum yet, run it with default Global Sweep
+        if self.last_spectrum_stats is None:
+            print("[Auto-Run] Spectrum data missing. Running default 'global' sweep...")
+            self.spectrum(mode='global')
+            
+        # If user hasn't run geometry yet, run it with default Swiss Roll
+        if self.last_geometry_stats is None:
+            print("[Auto-Run] Geometry data missing. Running default Swiss Roll check...")
+            self.geometry()
+            
+        # Generate Report
+        print_report(self.last_spectrum_stats, self.last_geometry_stats)
