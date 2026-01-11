@@ -1,0 +1,156 @@
+import numpy as np
+import os
+from .adapters import QiskitAdapter, PennyLaneAdapter, HAS_PENNYLANE
+from .spectral import compute_spectrum
+from .geometry import compute_geometry_score, project_quantum_state
+from .visualize import plot_spectrum, plot_manifold_3d
+from sklearn.datasets import make_swiss_roll
+
+class QuantumLens:
+    def __init__(self, object_to_analyze, params=None, framework="auto"):
+        """
+        The main interface for HilbertLens.
+        
+        Args:
+            object_to_analyze: The Qiskit Circuit, PennyLane QNode, or raw Python function.
+            params: (Optional) The data parameter(s) for Qiskit circuits.
+            framework: 'qiskit', 'pennylane', or 'auto'.
+        """
+        self.adapter = self._load_adapter(object_to_analyze, params, framework)
+        
+    def _load_adapter(self, obj, params, framework):
+        # 1. Automatic Detection
+        if framework == "auto":
+            obj_type = str(type(obj))
+            if "qiskit" in obj_type:
+                framework = "qiskit"
+            elif "pennylane" in obj_type:
+                framework = "pennylane"
+            else:
+                raise ValueError(f"Could not auto-detect framework for {obj_type}. Please specify 'framework='.")
+
+        # 2. Initialize specific adapter
+        print(f"[HilbertLens] Initialized for framework: {framework}")
+        
+        if framework == "qiskit":
+            if params is None:
+                raise ValueError("For Qiskit, you must provide the 'params' argument (the input data parameters).")
+            return QiskitAdapter(obj, params)
+            
+        elif framework == "pennylane":
+            if not HAS_PENNYLANE:
+                raise ImportError("PennyLane not installed.")
+            return PennyLaneAdapter(obj)
+            
+        else:
+            raise ValueError(f"Unknown framework: {framework}")
+
+    def spectrum(self, mode='local', feature_index=0, save_path=None):
+        """
+        Analyzes and plots the frequency spectrum.
+        
+        Args:
+            mode (str): 'local' (sweep one feature, freeze others) 
+                        or 'global' (sweep all features together: x1=t, x2=t...).
+            feature_index (int): If mode='local', which feature index to sweep.
+            save_path (str): Path to save the plot.
+        """
+        print(f"[HilbertLens] Computing Spectrum (Mode: {mode})...")
+        
+        # --- SMART WRAPPER ---
+        def kernel_wrapper(X_sweep):
+            """
+            X_sweep is (N, 1).
+            We need to map this 1D sweep to the circuit's full input dimensions.
+            """
+            # 1. Determine required dimensions (D)
+            n_required = 1 # Default fallback
+            
+            # Check Qiskit
+            if hasattr(self.adapter, 'data_params'):
+                n_required = len(self.adapter.data_params)
+            
+            # Check PennyLane (heuristic: try to infer from adapter if possible, else rely on user)
+            # For now, if we can't guess, we assume the user knows what they are doing.
+            
+            # 2. Create the Input Matrix (N, D)
+            N = X_sweep.shape[0]
+            
+            # Initialize with Zeros (The "Freeze" value)
+            X_full = np.zeros((N, n_required))
+            
+            # 3. Apply the Sweep Pattern
+            if mode == 'global':
+                # Global: Set ALL columns to the sweep value t
+                # This activates interaction gates like Rzz(x1*x2) -> Rzz(t^2)
+                for col in range(n_required):
+                    X_full[:, col] = X_sweep.flatten()
+                    
+            elif mode == 'local':
+                # Local: Set ONLY the target column to t
+                if feature_index >= n_required:
+                    raise ValueError(f"feature_index {feature_index} is out of bounds for circuit with {n_required} inputs.")
+                
+                X_full[:, feature_index] = X_sweep.flatten()
+                
+            else:
+                raise ValueError("mode must be 'local' or 'global'")
+                
+            # 4. Run Circuit
+            return self.adapter.get_kernel_matrix(X_full)
+        # --- END WRAPPER ---
+
+        freqs, power = compute_spectrum(kernel_wrapper)
+        
+        title = f"Spectrum ({mode.title()} Sweep)"
+        if mode == 'local':
+            title += f" - Feature {feature_index}"
+            
+        plot_spectrum(freqs, power, title=title, save_path=save_path)
+        
+        top_idx = np.argmax(power)
+        return {"dominant_freq": freqs[top_idx], "max_power": power[top_idx]}
+
+    def geometry(self, X_data=None, n_samples=200, save_path=None):
+        """
+        Analyzes geometry preservation. 
+        If X_data is None, automatically generates a Swiss Roll.
+        """
+        print("[HilbertLens] Analyzing Geometry...")
+        
+        if X_data is None:
+            print("  - No data provided. Generating synthetic Swiss Roll (n=200)...")
+            X_data, color = make_swiss_roll(n_samples=n_samples, noise=0.1)
+            # Normalize
+            X_data = (X_data - X_data.mean()) / X_data.std()
+            # Scale to fit into standard rotation range (approx -1 to 1) 
+            # so we don't spin the qubit 1000 times
+            X_data = X_data * 1.5 
+        else:
+            # If user provided data, we assume they have 'color' or labels for plotting?
+            # For this simple version, we just use the first dimension as color
+            color = X_data[:, 0]
+
+        # 1. Compute Kernel
+        # If the input is multidimensional, our current adapters handle it.
+        # However, simple 1-qubit circuits might expect 1D data.
+        # We'll try passing it directly.
+        
+        try:
+            K_matrix = self.adapter.get_kernel_matrix(X_data)
+        except Exception as e:
+            print(f"Error computing kernel: {e}")
+            print("Hint: Does your circuit have enough parameters for {X_data.shape[1]} features?")
+            return None
+
+        # 2. Score
+        score = compute_geometry_score(X_data, K_matrix)
+        print(f"  - Geometry Score (Spearman Correlation): {score:.4f}")
+        
+        # 3. Project & Plot
+        X_proj = project_quantum_state(K_matrix)
+        
+        title = f"Geometry Projection (Score: {score:.2f})"
+        plot_manifold_3d(X_proj, color, title=title, save_path=save_path)
+        
+        return {"score": score}

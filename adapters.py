@@ -1,6 +1,13 @@
 import numpy as np
 from qiskit.quantum_info import Statevector
 
+# We try-import pennylane to make it an optional dependency
+try:
+    import pennylane as qml
+    HAS_PENNYLANE = True
+except ImportError:
+    HAS_PENNYLANE = False
+
 class QiskitAdapter:
     def __init__(self, circuit, data_params, use_gpu=False):
         """
@@ -60,6 +67,62 @@ class QiskitAdapter:
         inner_products = M @ M.conj().T
         
         # The kernel is the magnitude squared: |<psi|psi>|^2
+        kernel_matrix = np.abs(inner_products)**2
+        
+        return kernel_matrix
+    
+
+class PennyLaneAdapter:
+    def __init__(self, qnode):
+        """
+        Wraps a PennyLane QNode to behave like a Kernel function.
+        
+        Args:
+            qnode (qml.QNode): A PennyLane QNode. It MUST:
+                               1. Take the data 'x' as its FIRST argument.
+                               2. Return qml.state().
+        """
+        if not HAS_PENNYLANE:
+            raise ImportError("PennyLane is not installed. Run 'pip install pennylane'.")
+            
+        self.qnode = qnode
+
+    def get_kernel_matrix(self, X):
+        """
+        Computes the kernel matrix for input data X.
+        """
+        # Ensure X is 2D (N, d) or (N, 1)
+        if X.ndim == 1:
+            X = X.reshape(-1, 1)
+            
+        N = X.shape[0]
+        state_vectors = []
+        
+        # 1. Compute States
+        # PennyLane is usually slower at batching than Qiskit, so we loop.
+        for i in range(N):
+            # We assume the QNode takes the vector x as the first argument.
+            # We flatten it because QNodes often expect 1D arrays or scalars.
+            row = X[i].flatten()
+            
+            # If it's a single feature, pass as scalar; otherwise pass array
+            if len(row) == 1:
+                val = row[0]
+            else:
+                val = row
+                
+            state = self.qnode(val)
+            
+            # PennyLane returns a tensor, convert to numpy
+            if hasattr(state, "numpy"):
+                state = state.numpy()
+                
+            state_vectors.append(state)
+            
+        # 2. Compute Gram Matrix
+        M = np.array(state_vectors)
+        # Inner products: M @ M_conjugate_transpose
+        inner_products = M @ M.conj().T
         kernel_matrix = np.abs(inner_products)**2
         
         return kernel_matrix
