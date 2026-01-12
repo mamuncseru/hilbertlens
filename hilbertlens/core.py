@@ -70,40 +70,25 @@ class QuantumLens:
             X_sweep is (N, 1).
             We need to map this 1D sweep to the circuit's full input dimensions.
             """
-            # 1. Determine required dimensions (D)
-            n_required = 1 # Default fallback
+            # 1. Ask the adapter how many features it needs
+            if hasattr(self.adapter, 'n_params'):
+                n_required = self.adapter.n_params # <--- DYNAMIC!
+            else:
+                n_required = 1 # Fallback
             
-            # Check Qiskit
-            if hasattr(self.adapter, 'data_params'):
-                n_required = len(self.adapter.data_params)
-            
-            # Check PennyLane (heuristic: try to infer from adapter if possible, else rely on user)
-            # For now, if we can't guess, we assume the user knows what they are doing.
-            
-            # 2. Create the Input Matrix (N, D)
+            # 2. Create the Input Matrix (N, n_required)
             N = X_sweep.shape[0]
-            
-            # Initialize with Zeros (The "Freeze" value)
             X_full = np.zeros((N, n_required))
             
-            # 3. Apply the Sweep Pattern
             if mode == 'global':
-                # Global: Set ALL columns to the sweep value t
-                # This activates interaction gates like Rzz(x1*x2) -> Rzz(t^2)
+                # Broadcast t to ALL features
                 for col in range(n_required):
                     X_full[:, col] = X_sweep.flatten()
-                    
             elif mode == 'local':
-                # Local: Set ONLY the target column to t
                 if feature_index >= n_required:
-                    raise ValueError(f"feature_index {feature_index} is out of bounds for circuit with {n_required} inputs.")
-                
+                    raise ValueError(f"Index {feature_index} out of bounds for {n_required}-feature circuit.")
                 X_full[:, feature_index] = X_sweep.flatten()
-                
-            else:
-                raise ValueError("mode must be 'local' or 'global'")
-                
-            # 4. Run Circuit
+            
             return self.adapter.get_kernel_matrix(X_full)
         # --- END WRAPPER ---
 
