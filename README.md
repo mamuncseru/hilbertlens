@@ -1,5 +1,8 @@
 
-# HilbertLens 🔬
+# HilbertLens
+
+[![PyPI version](https://img.shields.io/pypi/v/hilbertlens.svg)](https://pypi.org/project/hilbertlens/) [![Python versions](https://img.shields.io/pypi/pyversions/hilbertlens.svg)](https://pypi.org/project/hilbertlens/) [![License](https://img.shields.io/pypi/l/hilbertlens.svg)](https://pypi.org/project/hilbertlens/) [![Downloads](https://img.shields.io/pypi/dm/hilbertlens.svg)](https://pypi.org/project/hilbertlens/)
+
 
 **HilbertLens** is a diagnostic tool for Quantum Machine Learning (QML). It visualizes the hidden geometry of your quantum encodings and "diagnoses" their capacity to learn complex data.
 
@@ -7,21 +10,33 @@ Instead of blindly training Variational Quantum Circuits (VQC) and guessing why 
 1.  **Spectrum Analysis:** Does the circuit have enough bandwidth (expressibility) for the data?
 2.  **Geometry Analysis:** Does the encoding preserve the topological structure of the data?
 
-## 📦 Installation
+## Installation
+
+Install the latest stable release from PyPI:
 
 ```bash
-pip install .
+pip install hilbertlens
 
 ```
 
-For development (so edits are reflected immediately):
+To upgrade:
 
 ```bash
+pip install -U hilbertlens
+
+```
+### Development Installation
+
+Clone the repository and install in editable mode:
+
+```bash
+git clone https://github.com/mamuncseru/hilbertlens.git
+cd hilbertlens
 pip install -e .
 
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. The "Doctor" Check
 
@@ -60,13 +75,13 @@ lens.geometry(save_path="geometry.png")
 
 ```
 
-## 🏥 Understanding the Report
+## Understanding the Report
 
 * **[GOLD STANDARD]:** Your circuit has a rich spectrum (multiple frequencies) AND preserves geometry. It is ready for research.
 * **[SAFE BUT SIMPLE]:** Your circuit is linear (). It will work on simple data (Iris) but underfit complex data (Moons).
 * **[BROKEN GEOMETRY]:** Your circuit destroys the data structure (e.g., score < 0.5). Check your data scaling!
 
-## 🔧 Supported Frameworks
+## Supported Frameworks
 
 * **Qiskit** (Native support)
 * **PennyLane** (Auto-detected if installed)
@@ -130,3 +145,16 @@ lens.geometry(save_path="geometry.png")
 > **[GOLD STANDARD] READY FOR RESEARCH**  
 > Your circuit exhibits **High Capacity (Rich Spectrum)** and **Stable Geometry**.  
 > It can learn complex decision boundaries without breaking data topology.
+
+
+### Cite this work
+
+```
+@software{hilbertlens,
+  title        = {HilbertLens: Diagnosing Expressibility and Geometry in Quantum Machine Learning},
+  author       = {Al Mamun, Md. Abdullah},
+  year         = {2025},
+  url          = {https://github.com/mamuncseru/hilbertlens},
+  note         = {Python package available at https://pypi.org/project/hilbertlens/}
+}
+```
