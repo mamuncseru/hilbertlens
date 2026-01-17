@@ -71,7 +71,7 @@ class QuantumLens:
             We need to map this 1D sweep to the circuit's full input dimensions.
             """
             # 1. Ask the adapter how many features it needs
-            if hasattr(self.adapter, 'n_params'):
+            if hasattr(self.adapter, 'n_params') and self.adapter.n_params is not None:
                 n_required = self.adapter.n_params # <--- DYNAMIC!
             else:
                 n_required = 1 # Fallback
