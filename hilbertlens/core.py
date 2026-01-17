@@ -163,15 +163,16 @@ class QuantumLens:
         Generates the full research report based on previous runs.
         Auto-runs components if they are missing.
         """
-        # If user hasn't run spectrum yet, run it with default Global Sweep
-        if self.last_spectrum_stats is None:
-            print("[Auto-Run] Spectrum data missing. Running default 'global' sweep...")
-            self.spectrum(mode='global')
-            
         # If user hasn't run geometry yet, run it with default Swiss Roll
         if self.last_geometry_stats is None:
             print("[Auto-Run] Geometry data missing. Running default Swiss Roll check...")
             self.geometry()
+
+        # If user hasn't run spectrum yet, run it with default Global Sweep
+        if self.last_spectrum_stats is None:
+            print("[Auto-Run] Spectrum data missing. Running default 'global' sweep...")
+            self.spectrum(mode='global')
+
             
         # Generate Report
         print_report(self.last_spectrum_stats, self.last_geometry_stats)
