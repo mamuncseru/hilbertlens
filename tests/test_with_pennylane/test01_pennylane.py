@@ -44,9 +44,7 @@ def main():
     # Note: 'params' argument is not required for PennyLane.
     lens = hl.QuantumLens(circuit, framework='pennylane')
 
-    # MANUALLY SET THE PARAMETER COUNT
-    # This tells the adapter "expect 2 features" so spectrum() knows what to do.
-    # lens.adapter.n_params = 2
+
 
     # 4. Run the Full Diagnosis (Spectrum + Geometry)
     # This will automatically run spectrum() and geometry() checks.
@@ -57,8 +55,13 @@ def main():
     # Automatically generates a Swiss Roll dataset to test topology preservation
     print("\n--- Running Manual Geometry Check ---")
     lens.geometry(save_path="pennylane_geometry.png")
+
     
-        
+    # MANUALLY SET THE PARAMETER COUNT if only or spectrum called first
+    # This tells the adapter "expect 2 features" so spectrum() knows what to do.
+    # lens.adapter.n_params = 2
+
+
     # Check 2: Frequency Spectrum (Capacity)
     # mode='global' sweeps all inputs simultaneously to check total bandwidth
     print("\n--- Running Manual Spectrum Check ---")
