@@ -75,6 +75,41 @@ lens.geometry(save_path="geometry.png")
 
 ```
 
+### PennyLane Example
+
+You can also pass a standard PennyLane QNode directly.
+
+```python
+import hilbertlens as hl
+import pennylane as qml
+
+# 1. Define Device & Circuit
+dev = qml.device("default.qubit", wires=2)
+
+@qml.qnode(dev)
+def circuit(x):
+    # x is the input data array
+    qml.Hadamard(wires=0)
+    qml.Hadamard(wires=1)
+    
+    # Data Encoding
+    qml.RX(x[0], wires=0)
+    qml.RY(x[1], wires=1)
+    
+    # Entanglement
+    qml.CNOT(wires=[0, 1])
+    
+    # Must return state for analysis
+    return qml.state()
+
+# 2. Initialize Lens
+# Note: For PennyLane, we don't need to pass a params list.
+lens = hl.QuantumLens(circuit, framework='pennylane')
+
+# 3. Diagnose
+lens.diagnose()
+```
+
 ## Understanding the Report
 
 * **[GOLD STANDARD]:** Your circuit has a rich spectrum (multiple frequencies) AND preserves geometry. It is ready for research.
